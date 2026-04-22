@@ -1,0 +1,351 @@
+{
+  "project_name": "AutoStream Social-to-Lead Agentic Workflow",
+  "purpose": "Generate a production-quality Python agent for a fictional SaaS company that can classify intent, answer pricing/features questions from a local knowledge base, retain multi-turn state, and only trigger lead capture after collecting all required lead fields.",
+  "primary_goal": "Build a clean, demo-ready, real-world deployable conversational AI agent using LangGraph (preferred) or AutoGen, with local RAG, controlled tool execution, and testable memory behavior.",
+  "stack_requirements": {
+    "language": "Python 3.10+",
+    "framework": "LangGraph preferred; LangChain acceptable if needed",
+    "llm_options": [
+      "gpt-4o-mini",
+      "gemini-1.5-flash",
+      "claude-3-haiku"
+    ],
+    "memory_layer": "Use SimpleMem for persistent conversational memory / retrieval support, while keeping the product knowledge base local and deterministic for factual answers.",
+    "knowledge_base_format": [
+      "local JSON",
+      "local Markdown"
+    ]
+  },
+  "hard_constraints": [
+    "Do not use web search at runtime.",
+    "Do not hardcode dynamic answers outside the local knowledge base.",
+    "Do not trigger lead capture before all required fields are collected.",
+    "Do not ask for unnecessary personal data.",
+    "Do not lose conversation state across at least 5-6 turns.",
+    "Do not answer pricing/policy questions from model memory when a local KB lookup is available."
+  ],
+  "business_context": {
+    "company": "AutoStream",
+    "product": "Automated video editing SaaS for content creators",
+    "must_answer_topics": [
+      "pricing",
+      "features",
+      "company policies",
+      "lead qualification"
+    ],
+    "knowledge_base_entries": [
+      {
+        "section": "Basic Plan",
+        "price": "$29/month",
+        "limits": "10 videos/month",
+        "resolution": "720p"
+      },
+      {
+        "section": "Pro Plan",
+        "price": "$79/month",
+        "limits": "Unlimited videos",
+        "resolution": "4K",
+        "extras": [
+          "AI captions"
+        ]
+      },
+      {
+        "section": "Company Policies",
+        "items": [
+          "No refunds after 7 days",
+          "24/7 support available only on Pro plan"
+        ]
+      }
+    ]
+  },
+  "expected_intents": [
+    {
+      "label": "casual_greeting",
+      "definition": "Greetings, small talk, or non-buying conversation."
+    },
+    {
+      "label": "product_or_pricing_inquiry",
+      "definition": "Questions about pricing, plans, features, policies, limits, or comparisons."
+    },
+    {
+      "label": "high_intent_lead",
+      "definition": "User signals readiness to buy, try, upgrade, book, sign up, or start immediately."
+    }
+  ],
+  "tooling": {
+    "lead_capture_function": "def mock_lead_capture(name, email, platform): print(f\"Lead captured successfully: {name}, {email}, {platform}\")",
+    "tool_rule": "Only call mock_lead_capture after all three values are collected: name, email, platform."
+  },
+  "memory_strategy": {
+    "simplemem_role": [
+      "retain conversation state",
+      "remember collected lead fields",
+      "preserve prior user preferences within the session",
+      "support retrieval of recent context across 5-6 turns"
+    ],
+    "simplemem_usage_note": "Use SimpleMem as the durable memory layer and session context manager, but keep product facts in the local knowledge base so answers remain deterministic."
+  },
+  "architecture_preference": {
+    "recommended_pattern": [
+      "intent router node",
+      "RAG answer node",
+      "lead qualification node",
+      "slot-filling state node",
+      "tool execution node",
+      "memory checkpointing node"
+    ],
+    "state_fields": [
+      "messages",
+      "intent",
+      "lead_status",
+      "lead_name",
+      "lead_email",
+      "lead_platform",
+      "kb_context",
+      "turn_count",
+      "memory_snapshot"
+    ]
+  },
+  "performance_targets": {
+    "intent_classification_accuracy": ">= 95% on a small synthetic test set",
+    "rag_factual_accuracy": "100% exact on all local KB questions",
+    "tool_call_precision": "100% no premature lead capture",
+    "lead_slot_completion": "100% once the user provides all three fields",
+    "memory_retention": "Must preserve state correctly across at least 6 turns",
+    "hallucination_rate": "As close to 0 as possible for KB-backed facts",
+    "response_behavior": [
+      "ask one concise follow-up question at a time",
+      "summarize current collected lead fields before requesting the next missing one",
+      "never call the tool when fields are incomplete"
+    ]
+  },
+  "deliverables": {
+    "core_code": [
+      "agent logic",
+      "intent detection",
+      "local RAG pipeline",
+      "state management",
+      "tool execution",
+      "SimpleMem integration",
+      "tests",
+      "demo script"
+    ],
+    "docs": [
+      "requirements.txt",
+      "README.md",
+      "local knowledge base file",
+      "instructions file for iteration workflow"
+    ]
+  },
+  "files_to_create": [
+    {
+      "path": "src/agent.py",
+      "purpose": "Main agent graph, routing, response generation, and tool gating."
+    },
+    {
+      "path": "src/intents.py",
+      "purpose": "Intent classifier with deterministic rules plus optional LLM fallback."
+    },
+    {
+      "path": "src/rag.py",
+      "purpose": "Local KB loader, retrieval, and answer synthesis."
+    },
+    {
+      "path": "src/memory.py",
+      "purpose": "SimpleMem wrapper for conversation memory and state restoration."
+    },
+    {
+      "path": "src/tools.py",
+      "purpose": "Mock lead capture tool and validation helpers."
+    },
+    {
+      "path": "data/knowledge_base.json",
+      "purpose": "Local product facts, pricing, and policies."
+    },
+    {
+      "path": "tests/test_intents.py",
+      "purpose": "Intent classification tests."
+    },
+    {
+      "path": "tests/test_tool_gating.py",
+      "purpose": "Ensure the lead capture tool never runs early."
+    },
+    {
+      "path": "tests/test_rag_accuracy.py",
+      "purpose": "Check exact answers for KB facts."
+    },
+    {
+      "path": "docs/ITERATION_PLAN.md",
+      "purpose": "Step-by-step build workflow for Cursor execution."
+    }
+  ],
+  "cursor_execution_mode": {
+    "style": "iterate",
+    "rule": "Implement one phase at a time. After each phase, produce runnable code and preserve prior working state.",
+    "do_not_skip": [
+      "tests",
+      "error handling",
+      "README",
+      "demo flow"
+    ]
+  },
+  "iteration_plan": [
+    {
+      "phase": 1,
+      "name": "Project scaffold and data design",
+      "output": [
+        "folder structure",
+        "knowledge_base.json",
+        "requirements.txt",
+        "ITERATION_PLAN.md"
+      ],
+      "definition_of_done": [
+        "Repo structure exists",
+        "KB file contains exact pricing/features/policy facts",
+        "dependencies are pinned sensibly",
+        "iteration instructions are written"
+      ]
+    },
+    {
+      "phase": 2,
+      "name": "Intent classifier",
+      "output": [
+        "intent detection module",
+        "unit tests for intent labels",
+        "confidence or rule-based routing"
+      ],
+      "definition_of_done": [
+        "All three intents are classified reliably",
+        "greeting, inquiry, and high-intent examples are covered",
+        "tests pass"
+      ]
+    },
+    {
+      "phase": 3,
+      "name": "Local RAG layer",
+      "output": [
+        "KB loader",
+        "retrieval logic",
+        "answer formatting"
+      ],
+      "definition_of_done": [
+        "Pricing and policy questions are answered only from the KB",
+        "No hallucinated plan details",
+        "Exact factual answers are returned"
+      ]
+    },
+    {
+      "phase": 4,
+      "name": "SimpleMem integration",
+      "output": [
+        "memory wrapper",
+        "session state persistence",
+        "multi-turn context restoration"
+      ],
+      "definition_of_done": [
+        "Conversation state survives 5-6 turns",
+        "Lead fields persist until tool execution",
+        "Memory can be inspected or logged"
+      ]
+    },
+    {
+      "phase": 5,
+      "name": "Lead qualification and tool gating",
+      "output": [
+        "slot-filling flow",
+        "high-intent detection branch",
+        "mock_lead_capture integration"
+      ],
+      "definition_of_done": [
+        "Agent asks for name, email, platform only when high intent is detected",
+        "Tool runs only after all three fields are present",
+        "Premature tool execution is impossible"
+      ]
+    },
+    {
+      "phase": 6,
+      "name": "Testing and metrics",
+      "output": [
+        "automated tests",
+        "evaluation script",
+        "metrics report"
+      ],
+      "definition_of_done": [
+        "Intent accuracy is measured",
+        "RAG factual correctness is measured",
+        "tool gating is verified",
+        "memory retention is verified"
+      ]
+    },
+    {
+      "phase": 7,
+      "name": "README and demo readiness",
+      "output": [
+        "README.md",
+        "run instructions",
+        "architecture explanation",
+        "WhatsApp webhook integration explanation",
+        "demo script"
+      ],
+      "definition_of_done": [
+        "A new user can run the project locally",
+        "README explains architecture clearly",
+        "WhatsApp integration is described at a practical level"
+      ]
+    }
+  ],
+  "instructions_for_cursor": {
+    "general": [
+      "Build for clarity first, then polish.",
+      "Prefer deterministic logic for intent and lead gating.",
+      "Use the LLM only where natural language generation or soft classification helps.",
+      "Keep answers brief, accurate, and sales-ready.",
+      "Log state transitions clearly for debugging."
+    ],
+    "response_policy": [
+      "For greetings: respond warmly and ask how you can help.",
+      "For product/pricing inquiries: retrieve exact KB facts and answer directly.",
+      "For high intent: acknowledge interest and start slot collection.",
+      "For incomplete lead data: ask only for the missing field(s).",
+      "For complete lead data: call mock_lead_capture exactly once."
+    ],
+    "quality_rules": [
+      "Prefer simple, readable code over clever code.",
+      "Add type hints everywhere possible.",
+      "Include validation for email and platform values.",
+      "Keep knowledge base isolated from logic.",
+      "Write tests as you go."
+    ]
+  },
+  "acceptance_criteria": {
+    "functional": [
+      "Agent answers pricing correctly from local KB.",
+      "Agent detects high intent from phrases like 'I want to try', 'sign me up', 'start Pro plan'.",
+      "Agent collects name, email, and platform before tool call.",
+      "Agent keeps state across multiple turns."
+    ],
+    "technical": [
+      "Project runs locally with documented steps.",
+      "Tests verify intent, RAG, and tool gating.",
+      "README includes architecture and WhatsApp webhook integration explanation."
+    ],
+    "demo_ready": [
+      "Can show pricing Q&A in one flow.",
+      "Can show intent shift.",
+      "Can show slot collection.",
+      "Can show successful mock lead capture."
+    ]
+  },
+  "iteration_file_content": {
+    "filename": "docs/ITERATION_PLAN.md",
+    "sections": [
+      "Goal",
+      "Phase 1 to Phase 7 tasks",
+      "Definition of done for each phase",
+      "Testing checklist",
+      "Final submission checklist"
+    ],
+    "style": "actionable and stepwise"
+  },
+  "final_output_expectation": "A complete repository that can be cloned and run locally, with a believable conversational flow, deterministic knowledge answers, safe tool execution, and polished documentation."
+}

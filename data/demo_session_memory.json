@@ -1,0 +1,86 @@
+{
+  "demo-session-1": {
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hey there"
+      },
+      {
+        "role": "assistant",
+        "content": "Hi! I can help with AutoStream plans, features, and policies. What would you like to know?"
+      },
+      {
+        "role": "user",
+        "content": "What are your pricing plans?"
+      },
+      {
+        "role": "assistant",
+        "content": "Current plans: Here is the Basic Plan: $29/month, 10 videos/month, 720p resolution. Here is the Pro Plan: $79/month, Unlimited videos, 4K resolution, AI captions."
+      },
+      {
+        "role": "user",
+        "content": "I want to try the Pro plan"
+      },
+      {
+        "role": "assistant",
+        "content": "Collected so far - name: missing, email: missing, platform: missing. What is your name?"
+      },
+      {
+        "role": "user",
+        "content": "My name is Maya"
+      },
+      {
+        "role": "assistant",
+        "content": "Collected so far - name: Maya, email: missing, platform: missing. What is the best email to reach you?"
+      },
+      {
+        "role": "user",
+        "content": "maya@example.com"
+      },
+      {
+        "role": "assistant",
+        "content": "Collected so far - name: Maya, email: maya@example.com, platform: missing. Which platform do you primarily create on? (YouTube, Instagram, TikTok, LinkedIn, Twitch)"
+      },
+      {
+        "role": "user",
+        "content": "YouTube"
+      },
+      {
+        "role": "assistant",
+        "content": "Thanks, all required details are collected. Lead captured successfully: Maya, maya@example.com, YouTube"
+      },
+      {
+        "role": "user",
+        "content": "Sign me up again"
+      },
+      {
+        "role": "assistant",
+        "content": "Your lead details are already captured for this session. If you want to submit another lead, please start a new session."
+      }
+    ],
+    "intent": "high_intent_lead",
+    "lead_status": "captured",
+    "lead_name": "Maya",
+    "lead_email": "maya@example.com",
+    "lead_platform": "YouTube",
+    "kb_context": [
+      "Basic Plan: price=$29/month; limits=10 videos/month; resolution=720p; extras=none",
+      "Pro Plan: price=$79/month; limits=Unlimited videos; resolution=4K; extras=AI captions"
+    ],
+    "turn_count": 7,
+    "memory_snapshot": {
+      "session_id": "demo-session-1",
+      "messages_stored": 14,
+      "turn_count": 7,
+      "intent": "high_intent_lead",
+      "lead_status": "captured",
+      "lead_fields_complete": true,
+      "recent_context_preview": [
+        "YouTube",
+        "Thanks, all required details are collected. Lead captured successfully: Maya, maya@example.com, YouTube",
+        "Sign me up again",
+        "Your lead details are already captured for this session. If you want to submit another lead, please start a new session."
+      ]
+    }
+  }
+}

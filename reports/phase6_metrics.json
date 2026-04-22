@@ -1,0 +1,66 @@
+{
+  "generated_at": "2026-04-22T20:03:36+00:00",
+  "overall_passed": true,
+  "metrics": {
+    "intent_classification_accuracy": {
+      "name": "intent_classification_accuracy",
+      "value": 1.0,
+      "target": 0.95,
+      "passed": true,
+      "details": {
+        "samples": 19,
+        "correct": 19,
+        "mismatches": []
+      }
+    },
+    "rag_factual_accuracy": {
+      "name": "rag_factual_accuracy",
+      "value": 1.0,
+      "target": 1.0,
+      "passed": true,
+      "details": {
+        "samples": 6,
+        "exact_matches": 6,
+        "mismatches": []
+      }
+    },
+    "tool_call_precision": {
+      "name": "tool_call_precision",
+      "value": 1.0,
+      "target": 1.0,
+      "passed": true,
+      "details": {
+        "true_positives": 2,
+        "false_positives": 0,
+        "false_negatives": 0,
+        "mismatches": []
+      }
+    },
+    "lead_slot_completion": {
+      "name": "lead_slot_completion",
+      "value": 1.0,
+      "target": 1.0,
+      "passed": true,
+      "details": {
+        "sessions": 3,
+        "successful": 3,
+        "failures": []
+      }
+    },
+    "memory_retention": {
+      "name": "memory_retention",
+      "value": 1.0,
+      "target": 1.0,
+      "passed": true,
+      "details": {
+        "turn_count_at_least_six": true,
+        "twelve_messages_stored": true,
+        "lead_name_persisted": true,
+        "lead_email_persisted": true,
+        "lead_platform_persisted": true,
+        "lead_captured": true,
+        "restored_recent_context_has_twelve_messages": true
+      }
+    }
+  }
+}
