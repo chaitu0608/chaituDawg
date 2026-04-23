@@ -1,11 +1,7 @@
-langgraph==0.2.67
-langchain==0.3.7
-langchain-openai==0.2.8
-langchain-anthropic==0.2.4
-langchain-google-genai==2.0.4
-pydantic==2.9.2
-python-dotenv==1.0.1
-rapidfuzz==3.10.1
+# Runtime code (src/) uses the Python standard library only: deterministic agent,
+# JSON knowledge base, and file-backed session memory.
+#
+# Install dev/test tooling with: pip install -r requirements-dev.txt
+# Optional LangChain/LangGraph pins (unused by current code paths): requirements-llm.txt
+
 pytest==8.3.3
-pytest-cov==5.0.0
-mypy==1.13.0

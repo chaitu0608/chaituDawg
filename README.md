@@ -27,6 +27,7 @@ Production-quality conversational AI workflow for a fictional SaaS product (Auto
 - `src/evaluation.py`: metric computations for phase 6
 - `scripts/demo.py`: demo conversation runner
 - `scripts/evaluate.py`: metrics report generator
+- `examples/webhook_app.py`: FastAPI webhook reference with signature validation
 - `data/knowledge_base.json`: canonical product and policy facts
 - `tests/`: unit tests for intents, RAG, memory, tool gating, and phase-6 thresholds
 - `reports/`: generated metric reports
@@ -47,6 +48,8 @@ The runtime flow is intentionally deterministic:
 4. Tool execution gate checks all slots are complete before calling `mock_lead_capture`.
 5. `SimpleMemStore` checkpoints state every turn.
 
+Detailed flow diagram: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
+
 ### State Model
 
 Durable state fields include:
@@ -66,18 +69,27 @@ Durable state fields include:
 ### Requirements
 
 - Python 3.10+
+- On macOS/Homebrew Python, use a project virtual environment (PEP 668 blocks global `pip install`).
 
 ### Install
 
 ```bash
 python3 -m venv .venv
-./.venv/bin/python -m pip install -r requirements.txt
+./.venv/bin/python -m pip install -r requirements-dev.txt
 ```
+
+The runtime agent uses only the Python standard library. [`requirements.txt`](requirements.txt) pins `pytest` for the core test install; [`requirements-dev.txt`](requirements-dev.txt) adds coverage and `mypy`. For an optional future LangChain/LangGraph stack (not used by current imports), see [`requirements-llm.txt`](requirements-llm.txt).
 
 ### Run Tests
 
 ```bash
 ./.venv/bin/python -m pytest -q
+```
+
+Or via Makefile:
+
+```bash
+make test
 ```
 
 ### Run Demo
@@ -86,16 +98,35 @@ python3 -m venv .venv
 ./.venv/bin/python scripts/demo.py
 ```
 
+Or via Makefile:
+
+```bash
+make demo
+```
+
 ### Run Evaluation + Report
 
 ```bash
 ./.venv/bin/python scripts/evaluate.py --output-dir reports
 ```
 
+Or via Makefile:
+
+```bash
+make eval
+```
+
 Artifacts will be written to:
 
 - `reports/phase6_metrics.json`
 - `reports/phase6_metrics.md`
+
+## Security and abuse resistance
+
+- `session_id` is restricted to printable ASCII (no newlines or control characters) and bounded length before any disk access; invalid ids raise `ValueError`.
+- User messages are truncated to a fixed maximum length before classification, RAG, and persistence to reduce ReDoS and storage blowups.
+- Persisted chat history and lead fields are length-capped on read and write; hostile JSON files cannot allocate unbounded in-memory timelines.
+- `mock_lead_capture` logs structured confirmation; avoid enabling debug logs in production if PII must not hit log sinks.
 
 ## Behavior Guarantees
 
@@ -160,8 +191,33 @@ async def whatsapp_webhook(request: Request):
 - Add structured logs using `inspect_session_state` for debugging.
 - Keep product facts in KB file, not hardcoded in webhook layer.
 
+### Runnable webhook example
+
+```bash
+./.venv/bin/python -m pip install -r requirements-webhook.txt
+AUTOSTREAM_WEBHOOK_SECRET=dev-secret ./.venv/bin/python -m uvicorn examples.webhook_app:app --reload
+```
+
+Send payloads with `X-Autostream-Signature` set to:
+
+- `hex(hmac_sha256(AUTOSTREAM_WEBHOOK_SECRET, raw_request_body_bytes))`
+
+## Docker quickstart
+
+```bash
+docker compose up --build
+```
+
+This launches the webhook API on `http://localhost:8000` and mounts local `data/` into the container.
+
+## Observability notes
+
+See [`docs/OBSERVABILITY.md`](docs/OBSERVABILITY.md) for recommended log keys, metrics, and incident triage steps.
+
 ## Notes
 
 - The repository uses deterministic logic first and keeps LLM fallback optional.
-- For demonstration, `mock_lead_capture` prints and returns confirmation text.
+- For demonstration, `mock_lead_capture` logs an info message and returns confirmation text.
 - `src/memory.py` intentionally stores conversational state only, not product facts.
+- Root [`gpprompt.json`](gpprompt.json) describes an alternate LangGraph-first design; the shipped code is a small deterministic orchestrator in [`src/agent.py`](src/agent.py). Use [`requirements-llm.txt`](requirements-llm.txt) only if you extend the project in that direction.
+- Contribution guidance: [`CONTRIBUTING.md`](CONTRIBUTING.md)

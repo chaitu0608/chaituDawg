@@ -1,4 +1,5 @@
 {
+  "schema_version": 2,
   "company": "AutoStream",
   "product": "Automated video editing SaaS for content creators",
   "plans": [
@@ -7,18 +8,34 @@
       "price": "$29/month",
       "limits": "10 videos/month",
       "resolution": "720p",
-      "extras": []
+      "extras": [],
+      "metadata": {
+        "source": "internal_canonical_pricing_sheet",
+        "last_updated": "2026-04-23"
+      }
     },
     {
       "name": "Pro Plan",
       "price": "$79/month",
       "limits": "Unlimited videos",
       "resolution": "4K",
-      "extras": ["AI captions"]
+      "extras": ["AI captions"],
+      "metadata": {
+        "source": "internal_canonical_pricing_sheet",
+        "last_updated": "2026-04-23"
+      }
     }
   ],
   "policies": {
-    "refund_policy": "No refunds after 7 days",
-    "support_policy": "24/7 support available only on Pro plan"
+    "refund_policy": {
+      "text": "No refunds after 7 days",
+      "source": "internal_canonical_pricing_sheet",
+      "last_updated": "2026-04-23"
+    },
+    "support_policy": {
+      "text": "24/7 support available only on Pro plan",
+      "source": "internal_canonical_pricing_sheet",
+      "last_updated": "2026-04-23"
+    }
   }
 }

@@ -63,6 +63,10 @@
     "lead_name": "Maya",
     "lead_email": "maya@example.com",
     "lead_platform": "YouTube",
+    "email_retry_count": 0,
+    "platform_retry_count": 0,
+    "lead_collection_paused": false,
+    "lead_capture_fingerprint": "ddc2a0c3232e6022f4ae3d028be54d3d918aaa7397b06e370e37b261cd615684",
     "kb_context": [
       "Basic Plan: price=$29/month; limits=10 videos/month; resolution=720p; extras=none",
       "Pro Plan: price=$79/month; limits=Unlimited videos; resolution=4K; extras=AI captions"
@@ -75,6 +79,10 @@
       "intent": "high_intent_lead",
       "lead_status": "captured",
       "lead_fields_complete": true,
+      "email_retry_count": 0,
+      "platform_retry_count": 0,
+      "lead_collection_paused": false,
+      "lead_capture_fingerprint": "ddc2a0c3232e6022f4ae3d028be54d3d918aaa7397b06e370e37b261cd615684",
       "recent_context_preview": [
         "YouTube",
         "Thanks, all required details are collected. Lead captured successfully: Maya, maya@example.com, YouTube",

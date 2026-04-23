@@ -17,6 +17,7 @@ from typing import Any
 
 
 DEFAULT_KB_PATH = Path(__file__).resolve().parent.parent / "data" / "knowledge_base.json"
+CURRENT_KB_SCHEMA_VERSION = 2
 
 
 class QueryType(str, Enum):
@@ -38,6 +39,8 @@ class PlanRecord:
     limits: str
     resolution: str
     extras: tuple[str, ...]
+    source: str
+    last_updated: str
 
 
 @dataclass(frozen=True)
@@ -46,12 +49,15 @@ class PolicyRecord:
 
     refund_policy: str
     support_policy: str
+    source: str
+    last_updated: str
 
 
 @dataclass(frozen=True)
 class KnowledgeBase:
     """Parsed immutable representation of the local knowledge base."""
 
+    schema_version: int
     company: str
     product: str
     plans: tuple[PlanRecord, ...]
@@ -74,6 +80,7 @@ def load_knowledge_base(kb_path: str | Path = DEFAULT_KB_PATH) -> KnowledgeBase:
     with kb_file.open("r", encoding="utf-8") as file_handle:
         raw_kb: dict[str, Any] = json.load(file_handle)
 
+    raw_kb = _migrate_raw_kb(raw_kb)
     _validate_raw_kb(raw_kb)
 
     plans = tuple(
@@ -83,18 +90,23 @@ def load_knowledge_base(kb_path: str | Path = DEFAULT_KB_PATH) -> KnowledgeBase:
             limits=plan["limits"],
             resolution=plan["resolution"],
             extras=tuple(plan.get("extras", [])),
+            source=plan["metadata"]["source"],
+            last_updated=plan["metadata"]["last_updated"],
         )
         for plan in raw_kb["plans"]
     )
 
     policies = raw_kb["policies"]
     return KnowledgeBase(
+        schema_version=raw_kb["schema_version"],
         company=raw_kb["company"],
         product=raw_kb["product"],
         plans=plans,
         policies=PolicyRecord(
-            refund_policy=policies["refund_policy"],
-            support_policy=policies["support_policy"],
+            refund_policy=policies["refund_policy"]["text"],
+            support_policy=policies["support_policy"]["text"],
+            source=policies["refund_policy"]["source"],
+            last_updated=policies["refund_policy"]["last_updated"],
         ),
     )
 
@@ -182,10 +194,16 @@ def answer_from_kb(question: str, kb: KnowledgeBase | None = None) -> RAGResult:
 
 
 def _validate_raw_kb(raw_kb: dict[str, Any]) -> None:
-    required_keys = ("company", "product", "plans", "policies")
+    required_keys = ("schema_version", "company", "product", "plans", "policies")
     for key in required_keys:
         if key not in raw_kb:
             raise ValueError(f"Knowledge base is missing required key: {key}")
+
+    if raw_kb["schema_version"] != CURRENT_KB_SCHEMA_VERSION:
+        raise ValueError(
+            f"Unsupported knowledge base schema version: {raw_kb['schema_version']}. "
+            f"Expected {CURRENT_KB_SCHEMA_VERSION}."
+        )
 
     if not isinstance(raw_kb["plans"], list) or len(raw_kb["plans"]) == 0:
         raise ValueError("Knowledge base plans must be a non-empty list")
@@ -194,11 +212,70 @@ def _validate_raw_kb(raw_kb: dict[str, Any]) -> None:
         for key in ("name", "price", "limits", "resolution"):
             if key not in plan:
                 raise ValueError(f"Plan at index {index} is missing required key: {key}")
+        if "metadata" not in plan:
+            raise ValueError(f"Plan at index {index} is missing metadata")
+        _validate_metadata(plan["metadata"], f"plan at index {index}")
 
     policies = raw_kb["policies"]
     for key in ("refund_policy", "support_policy"):
         if key not in policies:
             raise ValueError(f"Knowledge base policies are missing required key: {key}")
+        if not isinstance(policies[key], dict):
+            raise ValueError(f"Policy {key} must be an object with text and metadata")
+        for field in ("text", "source", "last_updated"):
+            if field not in policies[key]:
+                raise ValueError(f"Policy {key} is missing required field: {field}")
+
+
+def _validate_metadata(metadata: dict[str, Any], entity_name: str) -> None:
+    if not isinstance(metadata, dict):
+        raise ValueError(f"Metadata for {entity_name} must be an object")
+    for key in ("source", "last_updated"):
+        if key not in metadata:
+            raise ValueError(f"Metadata for {entity_name} is missing required key: {key}")
+
+
+def _migrate_raw_kb(raw_kb: dict[str, Any]) -> dict[str, Any]:
+    schema_version = raw_kb.get("schema_version")
+    if schema_version == CURRENT_KB_SCHEMA_VERSION:
+        return raw_kb
+
+    # v1 -> v2 migration: promote simple string policy fields and add metadata wrappers.
+    if schema_version is None:
+        migrated = dict(raw_kb)
+        default_source = "internal_canonical_pricing_sheet"
+        default_updated = "2026-04-23"
+        migrated["schema_version"] = CURRENT_KB_SCHEMA_VERSION
+
+        migrated_plans: list[dict[str, Any]] = []
+        for plan in migrated.get("plans", []):
+            if not isinstance(plan, dict):
+                continue
+            upgraded_plan = dict(plan)
+            upgraded_plan["metadata"] = {
+                "source": default_source,
+                "last_updated": default_updated,
+            }
+            migrated_plans.append(upgraded_plan)
+        migrated["plans"] = migrated_plans
+
+        policies = migrated.get("policies", {})
+        if isinstance(policies, dict):
+            migrated["policies"] = {
+                "refund_policy": {
+                    "text": policies.get("refund_policy", ""),
+                    "source": default_source,
+                    "last_updated": default_updated,
+                },
+                "support_policy": {
+                    "text": policies.get("support_policy", ""),
+                    "source": default_source,
+                    "last_updated": default_updated,
+                },
+            }
+        return migrated
+
+    return raw_kb
 
 
 def _route_query(normalized_question: str, kb: KnowledgeBase) -> tuple[QueryType, str | None]:

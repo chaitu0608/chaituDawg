@@ -9,8 +9,32 @@ Phase 5 scope:
 from __future__ import annotations
 
 from dataclasses import dataclass
+import logging
 import re
 
+logger = logging.getLogger(__name__)
+EMAIL_TOKEN_PATTERN = re.compile(r"([A-Za-z0-9._%+-]{1,64})@([A-Za-z0-9.-]+\.[A-Za-z]{2,})")
+
+# Phrases that indicate signup intent, not a person's name (word-boundary matched).
+_HIGH_INTENT_NAME_FALSE_POSITIVE_TERMS: tuple[str, ...] = (
+    "i want to try",
+    "sign me up",
+    "get started",
+    "subscribe",
+    "start pro plan",
+    "start basic plan",
+    "ready to buy",
+    "upgrade",
+    "book a demo",
+    "get started today",
+    "start now",
+    "lets start",
+    "let's start",
+    "start",
+    "resume signup",
+    "continue signup",
+    "continue sign up",
+)
 
 EMAIL_PATTERN = re.compile(r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$")
 
@@ -38,7 +62,7 @@ class LeadCapturePayload:
 def mock_lead_capture(name: str, email: str, platform: str) -> str:
     """Mocked lead capture tool used for controlled integration tests."""
     message = f"Lead captured successfully: {name}, {email}, {platform}"
-    print(message)
+    logger.info("%s", mask_email_in_text(message))
     return message
 
 
@@ -94,6 +118,9 @@ def extract_name(text: str) -> str | None:
         if match:
             return _clean_name(match.group(1))
 
+    if _signals_high_intent_chatter(normalized):
+        return None
+
     # If user only sends a short name-like message, accept it as a name.
     if _looks_like_plain_name(normalized):
         return _clean_name(normalized)
@@ -122,6 +149,30 @@ def supported_platforms() -> tuple[str, ...]:
     return ("YouTube", "Instagram", "TikTok", "LinkedIn", "Twitch")
 
 
+def mask_email_in_text(text: str) -> str:
+    """Mask email usernames in logs and snapshots to reduce PII exposure."""
+    def _replace(match: re.Match[str]) -> str:
+        username = match.group(1)
+        domain = match.group(2)
+        if len(username) <= 2:
+            masked = "*" * len(username)
+        else:
+            masked = username[0] + ("*" * (len(username) - 2)) + username[-1]
+        return f"{masked}@{domain}"
+
+    return EMAIL_TOKEN_PATTERN.sub(_replace, text)
+
+
+def _signals_high_intent_chatter(text: str) -> bool:
+    """True when the line reads like a signup CTA, not a contact name."""
+    lowered = text.lower()
+    for term in _HIGH_INTENT_NAME_FALSE_POSITIVE_TERMS:
+        pattern = r"\b" + re.escape(term).replace(r"\ ", r"\s+") + r"\b"
+        if re.search(pattern, lowered):
+            return True
+    return False
+
+
 def _looks_like_plain_name(value: str) -> bool:
     if "@" in value:
         return False
@@ -145,6 +196,8 @@ def _looks_like_plain_name(value: str) -> bool:
         "tiktok",
         "linkedin",
         "twitch",
+        "resume",
+        "signup",
     }
     return not any(word.lower() in blocked_tokens for word in words)
 

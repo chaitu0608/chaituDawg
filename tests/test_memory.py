@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest  # pyright: ignore[reportMissingImports]
+
 from src.memory import SimpleMemStore
 
 
@@ -110,3 +112,39 @@ def test_mark_lead_captured_is_sticky(tmp_path: Path) -> None:
 
     assert reloaded.lead_status == "captured"
     assert reloaded.lead_platform == "YouTube"
+
+
+def test_inspect_state_masks_email_by_default(tmp_path: Path) -> None:
+    storage_path = tmp_path / "simplemem_sessions.json"
+    session_id = "masked-session"
+
+    store = SimpleMemStore(storage_path=storage_path)
+    store.update_lead_fields(session_id, name="Ava", email="ava@example.com", platform="YouTube")
+    store.record_turn(
+        session_id,
+        user_message="my email is ava@example.com",
+        assistant_message="thanks ava@example.com",
+    )
+
+    masked = store.inspect_state(session_id)
+    unmasked = store.inspect_state(session_id, include_pii=True)
+
+    assert masked["lead_email"] == "a*a@example.com"
+    assert unmasked["lead_email"] == "ava@example.com"
+
+
+def test_checksummed_store_detects_tampering(tmp_path: Path) -> None:
+    storage_path = tmp_path / "simplemem_sessions.json"
+    session_id = "checksum-session"
+
+    store = SimpleMemStore(storage_path=storage_path, enable_checksum=True)
+    store.record_turn(session_id, user_message="hello", assistant_message="hi")
+
+    # Mutate payload without updating checksum.
+    raw = storage_path.read_text(encoding="utf-8")
+    tampered = raw.replace("hello", "hacked")
+    storage_path.write_text(tampered, encoding="utf-8")
+
+    reloaded = SimpleMemStore(storage_path=storage_path, enable_checksum=True)
+    with pytest.raises(ValueError, match="checksum mismatch"):
+        reloaded.load_state(session_id)

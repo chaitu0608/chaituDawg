@@ -2,15 +2,21 @@
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 from src.rag import QueryType, answer_from_kb, load_knowledge_base
 
 
 def test_kb_loads_canonical_facts() -> None:
     kb = load_knowledge_base()
 
+    assert kb.schema_version == 2
     assert kb.company == "AutoStream"
     assert kb.product == "Automated video editing SaaS for content creators"
     assert len(kb.plans) == 2
+    assert kb.plans[0].source == "internal_canonical_pricing_sheet"
+    assert kb.policies.source == "internal_canonical_pricing_sheet"
     assert kb.policies.refund_policy == "No refunds after 7 days"
     assert kb.policies.support_policy == "24/7 support available only on Pro plan"
 
@@ -73,3 +79,30 @@ def test_unknown_question_returns_safe_guidance() -> None:
         "I can answer pricing, features, and policies from our local knowledge base. "
         "Ask about the Basic Plan, Pro Plan, refund policy, or support policy."
     )
+
+
+def test_kb_v1_payload_migrates_to_v2_shape(tmp_path: Path) -> None:
+    v1_payload = {
+        "company": "AutoStream",
+        "product": "Automated video editing SaaS for content creators",
+        "plans": [
+            {
+                "name": "Basic Plan",
+                "price": "$29/month",
+                "limits": "10 videos/month",
+                "resolution": "720p",
+                "extras": [],
+            }
+        ],
+        "policies": {
+            "refund_policy": "No refunds after 7 days",
+            "support_policy": "24/7 support available only on Pro plan",
+        },
+    }
+    kb_path = tmp_path / "legacy_kb.json"
+    kb_path.write_text(json.dumps(v1_payload), encoding="utf-8")
+
+    kb = load_knowledge_base(kb_path)
+    assert kb.schema_version == 2
+    assert kb.plans[0].source == "internal_canonical_pricing_sheet"
+    assert kb.policies.refund_policy == "No refunds after 7 days"

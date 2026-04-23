@@ -1,0 +1,10 @@
+services:
+  autostream-webhook:
+    build: .
+    container_name: autostream-webhook
+    environment:
+      AUTOSTREAM_WEBHOOK_SECRET: dev-secret
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data

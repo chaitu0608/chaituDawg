@@ -6,12 +6,18 @@ from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Any
+from typing import Any, TypedDict
 
 from src.agent import AutoStreamAgent
 from src.intents import IntentClassifier, IntentLabel
 from src.memory import SimpleMemStore
 from src.rag import QueryType, answer_from_kb
+
+
+class _ToolCallPrecisionScenario(TypedDict):
+    id: str
+    messages: tuple[str, ...]
+    expected_tool_calls: tuple[bool, ...]
 
 
 @dataclass(frozen=True)
@@ -218,7 +224,7 @@ def evaluate_rag_factual_accuracy() -> MetricResult:
 
 def evaluate_tool_call_precision() -> MetricResult:
     """Measure premature-tool-call avoidance across lead-flow turns."""
-    scenarios = (
+    scenarios: tuple[_ToolCallPrecisionScenario, ...] = (
         {
             "id": "partial_fields",
             "messages": ("Sign me up", "My name is Ava", "ava@example.com"),
