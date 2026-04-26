@@ -10,7 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
 import re
-from typing import Protocol, Sequence
+from typing import Optional, Protocol, Sequence
 
 
 class IntentLabel(str, Enum):
@@ -84,7 +84,7 @@ GREETING_TERMS: tuple[str, ...] = (
 class IntentClassifier:
     """Hybrid classifier: deterministic rules first, optional LLM fallback second."""
 
-    def __init__(self, llm_fallback: LLMIntentFallback | None = None) -> None:
+    def __init__(self, llm_fallback: Optional[LLMIntentFallback] = None) -> None:
         self._llm_fallback = llm_fallback
 
     def classify(self, user_text: str) -> IntentResult:
@@ -126,7 +126,7 @@ class IntentClassifier:
         )
 
 
-def _classify_with_rules(normalized_text: str) -> IntentResult | None:
+def _classify_with_rules(normalized_text: str) -> Optional[IntentResult]:
     high_intent_matches = _find_matches(normalized_text, HIGH_INTENT_TERMS)
     if high_intent_matches:
         return IntentResult(
@@ -168,7 +168,7 @@ def _find_matches(normalized_text: str, terms: Sequence[str]) -> tuple[str, ...]
     return tuple(matches)
 
 
-def _parse_label(raw_label: str) -> IntentLabel | None:
+def _parse_label(raw_label: str) -> Optional[IntentLabel]:
     for label in IntentLabel:
         if raw_label == label.value:
             return label

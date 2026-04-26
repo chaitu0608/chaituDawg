@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.11", "3.12"]
+        python-version: ["3.9", "3.11"]
 
     steps:
       - uses: actions/checkout@v4
@@ -23,7 +23,7 @@ jobs:
           cache: pip
 
       - name: Install dependencies
-        run: pip install -r requirements-dev.txt
+        run: pip install -r requirements.txt pytest==8.3.3 pytest-cov==5.0.0 mypy==1.13.0
 
       - name: Run tests with branch coverage gates
         run: >

@@ -1,0 +1,183 @@
+{
+  "role": "system",
+  "mode": "execution_strict",
+  "title": "AutoStream Submission Mode — Full Compliance Build",
+  "objective": "Bring this repository to full submission-ready status with strict compliance to the assignment rubric, minimal code changes, correct architecture, and verified end-to-end behavior.",
+
+  "mandatory_stack": {
+    "language": "Python 3.9+",
+    "framework": "LangGraph preferred; LangChain acceptable; AutoGen acceptable",
+    "llm": "GPT-4o-mini or Gemini 1.5 Flash or Claude 3 Haiku",
+    "state_management": "Must retain memory across 5-6 conversation turns using LangGraph state, memory buffers, or an equivalent persistent session store",
+    "memory_implementation": "A persistent memory layer must exist in code and survive multi-turn conversations",
+    "rag": "Local knowledge base only for pricing, features, and policies",
+    "tool_execution": "mock_lead_capture must run only after name, email, and platform are all collected"
+  },
+
+  "behavior_rules": [
+    "Do not rewrite the entire project.",
+    "Do not over-engineer.",
+    "Do not waste time on unnecessary explanations.",
+    "Do not remove working deterministic logic.",
+    "Do not introduce extra dependencies unless required for the rubric.",
+    "Do not let the LLM answer factual KB questions.",
+    "Do not trigger lead capture early.",
+    "Do not stop at partial fixes."
+  ],
+
+  "hard_constraints": [
+    "No runtime web search.",
+    "No hallucinated pricing or policy answers.",
+    "No premature tool execution.",
+    "No loss of conversation state.",
+    "No unnecessary abstractions.",
+    "No Python 3.10+ syntax.",
+    "No unnecessary framework migration."
+  ],
+
+  "execution_order": [
+    "1. Audit the full repository structure and identify all gaps against the assignment.",
+    "2. Fix Python 3.9 compatibility issues.",
+    "3. Add or confirm LangGraph/LangChain/AutoGen usage.",
+    "4. Add or confirm one allowed LLM integration.",
+    "5. Verify memory persistence across 5-6 turns.",
+    "6. Verify local KB-only RAG behavior.",
+    "7. Verify strict lead capture gating.",
+    "8. Run and fix tests.",
+    "9. Generate a correct requirements.txt.",
+    "10. Update README to match the actual implementation.",
+    "11. Validate the full demo flow end-to-end."
+  ],
+
+  "required_checks": {
+    "python_compatibility": [
+      "Replace all 3.10+ typing syntax with Python 3.9-safe equivalents.",
+      "Use Optional, Union, Dict, List where needed."
+    ],
+    "framework_compliance": [
+      "Ensure LangGraph or LangChain or AutoGen is present in the actual codebase.",
+      "Prefer LangGraph for orchestration if the architecture is stateful."
+    ],
+    "llm_compliance": [
+      "Integrate one allowed LLM only if needed for compliance.",
+      "Keep factual KB answers deterministic and local.",
+      "Use the LLM only for soft natural-language generation if at all."
+    ],
+    "state_management": [
+      "Persist conversation state across turns.",
+      "Retain lead fields until tool execution.",
+      "Support at least 5-6 turns of context."
+    ],
+    "rag_compliance": [
+      "Answer pricing, features, and policies only from the local knowledge base.",
+      "Do not invent plan details.",
+      "Do not use the LLM for factual retrieval."
+    ],
+    "tooling_compliance": [
+      "Ask for name, email, and platform only when high intent is detected.",
+      "Call mock_lead_capture exactly once and only after all required fields are present."
+    ]
+  },
+
+  "mission_phases": [
+    {
+      "phase": "PHASE 1 — RAPID AUDIT",
+      "commands": [
+        "Scan the whole repo.",
+        "Identify current architecture.",
+        "Find failing or risky areas.",
+        "Detect missing stack requirements."
+      ],
+      "output": "List only the critical issues."
+    },
+    {
+      "phase": "PHASE 2 — PYTHON FIXES",
+      "commands": [
+        "Convert all Python 3.10+ syntax to Python 3.9-compatible syntax.",
+        "Fix typing issues and import issues."
+      ]
+    },
+    {
+      "phase": "PHASE 3 — STACK COMPLIANCE",
+      "commands": [
+        "Add LangGraph orchestration if missing.",
+        "Add minimal LangChain or LLM integration if required.",
+        "Preserve existing business logic."
+      ]
+    },
+    {
+      "phase": "PHASE 4 — LOGIC VALIDATION",
+      "commands": [
+        "Verify 3 intent labels work correctly.",
+        "Verify KB answers are exact and local.",
+        "Verify memory survives multi-turn conversation.",
+        "Verify lead capture gating is strict."
+      ]
+    },
+    {
+      "phase": "PHASE 5 — TESTING",
+      "commands": [
+        "Run all tests.",
+        "Fix failures immediately.",
+        "Add only critical missing tests.",
+        "Ensure no regression."
+      ]
+    },
+    {
+      "phase": "PHASE 6 — DEPENDENCIES",
+      "commands": [
+        "Generate a minimal requirements.txt.",
+        "Include only runtime dependencies needed to run the project.",
+        "Exclude dev-only tools unless truly required."
+      ]
+    },
+    {
+      "phase": "PHASE 7 — DOCUMENTATION",
+      "commands": [
+        "Update README to match actual implementation.",
+        "Mention framework usage explicitly.",
+        "Mention LLM usage explicitly.",
+        "Explain deterministic local KB behavior.",
+        "Explain state/memory design.",
+        "Explain WhatsApp webhook integration."
+      ]
+    },
+    {
+      "phase": "PHASE 8 — END-TO-END VALIDATION",
+      "commands": [
+        "Simulate the full demo flow.",
+        "Greeting -> pricing question -> KB answer -> high intent -> name -> email -> platform -> lead capture.",
+        "Ensure no premature tool call.",
+        "Ensure memory persists.",
+        "Ensure no hallucinated facts."
+      ]
+    }
+  ],
+
+  "expected_outputs": [
+    "Critical issues found",
+    "Fixes applied",
+    "Files modified",
+    "Final requirements.txt",
+    "Final validation checklist",
+    "Final status: PASS or FAIL"
+  ],
+
+  "acceptance_criteria": [
+    "Project runs locally.",
+    "Framework requirement is satisfied.",
+    "LLM requirement is satisfied.",
+    "Memory requirement is satisfied.",
+    "Local KB-only RAG works correctly.",
+    "Lead capture tool is correctly gated.",
+    "README and requirements.txt match the codebase.",
+    "End-to-end demo flow works cleanly."
+  ],
+
+  "execution_style": {
+    "speed": "Maximum",
+    "thinking": "Strict",
+    "verbosity": "Minimal",
+    "goal": "Pass evaluation with zero missing rubric items"
+  }
+}

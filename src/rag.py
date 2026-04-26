@@ -13,7 +13,7 @@ from enum import Enum
 import json
 from pathlib import Path
 import re
-from typing import Any
+from typing import Any, Optional, Union
 
 
 DEFAULT_KB_PATH = Path(__file__).resolve().parent.parent / "data" / "knowledge_base.json"
@@ -70,11 +70,11 @@ class RAGResult:
 
     answer: str
     query_type: QueryType
-    matched_plan: str | None
+    matched_plan: Optional[str]
     kb_context: tuple[str, ...]
 
 
-def load_knowledge_base(kb_path: str | Path = DEFAULT_KB_PATH) -> KnowledgeBase:
+def load_knowledge_base(kb_path: Union[str, Path] = DEFAULT_KB_PATH) -> KnowledgeBase:
     """Load and validate local KB JSON from disk."""
     kb_file = Path(kb_path)
     with kb_file.open("r", encoding="utf-8") as file_handle:
@@ -111,7 +111,7 @@ def load_knowledge_base(kb_path: str | Path = DEFAULT_KB_PATH) -> KnowledgeBase:
     )
 
 
-def answer_from_kb(question: str, kb: KnowledgeBase | None = None) -> RAGResult:
+def answer_from_kb(question: str, kb: Optional[KnowledgeBase] = None) -> RAGResult:
     """Answer supported questions using deterministic retrieval from local KB facts."""
     knowledge_base = kb or load_knowledge_base()
     normalized_question = _normalize_text(question)
@@ -278,7 +278,7 @@ def _migrate_raw_kb(raw_kb: dict[str, Any]) -> dict[str, Any]:
     return raw_kb
 
 
-def _route_query(normalized_question: str, kb: KnowledgeBase) -> tuple[QueryType, str | None]:
+def _route_query(normalized_question: str, kb: KnowledgeBase) -> tuple[QueryType, Optional[str]]:
     matched_plan = _detect_plan(normalized_question, kb)
 
     if _contains_any(normalized_question, ("refund", "refunds", "money back")):
@@ -349,7 +349,7 @@ def _require_plan(kb: KnowledgeBase, plan_name: str) -> PlanRecord:
     raise ValueError(f"Plan not found in KB: {plan_name}")
 
 
-def _detect_plan(normalized_question: str, kb: KnowledgeBase) -> str | None:
+def _detect_plan(normalized_question: str, kb: KnowledgeBase) -> Optional[str]:
     basic_aliases = ("basic", "basic plan")
     pro_aliases = ("pro", "pro plan")
 

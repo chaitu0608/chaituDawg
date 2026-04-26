@@ -9,7 +9,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from src.agent import build_default_agent
+from src.graph_agent import build_langgraph_agent
 
 
 def main() -> int:
@@ -17,7 +17,7 @@ def main() -> int:
     if storage_path.exists():
         storage_path.unlink()
 
-    agent = build_default_agent(storage_path=storage_path)
+    agent = build_langgraph_agent(storage_path=storage_path)
     session_id = "demo-session-1"
 
     scripted_user_messages = (

@@ -1,0 +1,159 @@
+{
+  "role": "system",
+  "objective": "Deliver a submission-ready, demo-ready AutoStream agent by auditing, fixing, validating, and documenting the existing deterministic workflow without unnecessary refactors.",
+  "project_context": {
+    "product": "AutoStream",
+    "goal": "Conversational AI workflow for pricing/features Q&A, deterministic intent routing, multi-turn memory, and gated lead capture.",
+    "canonical_components": [
+      "src/intents.py",
+      "src/rag.py",
+      "src/memory.py",
+      "src/tools.py",
+      "src/agent.py",
+      "tests/",
+      "data/knowledge_base.json"
+    ],
+    "design_principles": [
+      "Deterministic logic first; optional LLM fallback only if explicitly needed",
+      "Use local KB as the source of truth for product/policy facts",
+      "No runtime web search",
+      "Minimize code churn and preserve architecture intent",
+      "Prefer targeted fixes over broad rewrites"
+    ]
+  },
+  "hard_constraints": [
+    "Do not rewrite the whole project unless required by a blocking defect.",
+    "Do not add dependencies unless strictly necessary.",
+    "Do not use runtime web search.",
+    "Do not answer product/pricing/policy facts from model memory when local KB exists.",
+    "Do not call lead capture until name, email, and platform are all present and valid.",
+    "Do not ask for extra PII beyond required lead fields.",
+    "Do not lose state across turns or between lead-slot prompts.",
+    "Do not break existing tests or documented demo flow."
+  ],
+  "success_criteria": {
+    "behavior": [
+      "Correct greeting/inquiry/lead intent routing",
+      "KB answers are deterministic, precise, and non-hallucinated",
+      "Lead flow asks one missing slot at a time",
+      "Lead capture executes exactly once after all slots are complete",
+      "Session memory survives 5-6+ turns"
+    ],
+    "quality": [
+      "All tests pass",
+      "README reflects actual runtime behavior",
+      "requirements files are minimal and accurate",
+      "Demo script works end-to-end"
+    ],
+    "robustness": [
+      "Input/session validation is safe",
+      "State growth is bounded",
+      "No unsafe logging of sensitive user data"
+    ]
+  },
+  "execution_strategy": {
+    "mode": "iterative",
+    "rule": "Work in small safe phases: inspect -> diagnose -> patch -> test -> validate -> summarize.",
+    "priorities": [
+      "Correctness",
+      "Reliability",
+      "Testability",
+      "Readability",
+      "Documentation accuracy"
+    ],
+    "change_policy": [
+      "Touch only necessary files",
+      "Keep diffs small and reviewable",
+      "Add concise comments only where logic is non-obvious"
+    ]
+  },
+  "workflow": [
+    {
+      "phase": 1,
+      "name": "Audit and baseline",
+      "tasks": [
+        "Map entrypoints and flow in agent/orchestration code",
+        "Cross-check imports and requirements for mismatches",
+        "Identify failing tests, runtime errors, and behavior gaps"
+      ]
+    },
+    {
+      "phase": 2,
+      "name": "Core behavior verification",
+      "tasks": [
+        "Validate intent classifier outcomes for core scenarios",
+        "Validate RAG retrieval and response formatting from local KB only",
+        "Validate state persistence and slot carry-over across turns",
+        "Validate strict lead-tool gating"
+      ]
+    },
+    {
+      "phase": 3,
+      "name": "Targeted fixes",
+      "tasks": [
+        "Fix logic bugs and edge cases with minimal edits",
+        "Fix validation and session handling issues",
+        "Fix demo/test blockers first"
+      ]
+    },
+    {
+      "phase": 4,
+      "name": "Test and verify",
+      "tasks": [
+        "Run full test suite",
+        "Add only essential missing tests for uncovered critical behavior",
+        "Verify exact-once lead capture and no premature tool call",
+        "Verify pricing/policy responses remain KB-grounded and exact"
+      ]
+    },
+    {
+      "phase": 5,
+      "name": "Submission polish",
+      "tasks": [
+        "Align README with implementation details",
+        "Confirm requirements files are accurate and minimal",
+        "Generate concise readiness report with remaining risks"
+      ]
+    }
+  ],
+  "validation_checks": {
+    "intents": [
+      "casual_greeting",
+      "product_or_pricing_inquiry",
+      "high_intent_lead"
+    ],
+    "rag": [
+      "Answer uses local KB only",
+      "No hallucinated plans/features/policies",
+      "Pricing and policy values remain exact"
+    ],
+    "lead_flow": [
+      "Prompts one missing field at a time",
+      "Collects required fields only: name, email, platform",
+      "Invokes lead capture exactly once when complete"
+    ],
+    "memory": [
+      "State persists for 5-6+ turns",
+      "Collected lead fields persist until completion",
+      "Post-capture behavior is stable"
+    ],
+    "security": [
+      "Invalid or malicious session identifiers are rejected",
+      "User message length is bounded",
+      "No sensitive value leakage in logs"
+    ]
+  },
+  "required_output": [
+    "Top issues found (ordered by severity)",
+    "Files changed and why",
+    "Exact fixes applied",
+    "Test results and evidence",
+    "Dependency and README alignment notes",
+    "Final readiness verdict with known limitations"
+  ],
+  "response_style": {
+    "tone": "clear, concise, technical",
+    "format": "small actionable steps with minimal noise",
+    "rule": "analyze before editing; validate after each meaningful change"
+  }
+}

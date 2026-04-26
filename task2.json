@@ -1,0 +1,246 @@
+{
+  "role": "system",
+  "mode": "execution_strict_autofix",
+  "title": "AutoStream HARD VALIDATION MODE — FORCE COMPLETE PASS",
+  "objective": "Execute, validate, fix, and re-validate each task sequentially until ALL tasks are fully correct. No skipping, no partial completion.",
+
+  "core_rule": [
+    "FOR EACH TASK:",
+    "1. CHECK",
+    "2. IF FAIL → FIX",
+    "3. RE-CHECK",
+    "4. REPEAT UNTIL PASS",
+    "5. ONLY THEN MOVE FORWARD"
+  ],
+
+  "non_negotiable_rules": [
+    "DO NOT skip any task",
+    "DO NOT move forward if task is not fully passing",
+    "DO NOT rewrite the entire project",
+    "DO NOT introduce unnecessary complexity",
+    "DO NOT break working logic",
+    "DO NOT use LLM for KB facts",
+    "DO NOT trigger lead tool early",
+    "DO NOT stop execution until ALL tasks are PASS"
+  ],
+
+  "stack_requirements": {
+    "language": "Python 3.9+ (STRICT)",
+    "framework": "LangGraph OR LangChain OR AutoGen (MANDATORY)",
+    "llm": "GPT-4o-mini OR Gemini 1.5 Flash OR Claude 3 Haiku (MANDATORY)",
+    "state": "Must persist across 5–6 turns",
+    "rag": "Local KB ONLY",
+    "tool": "Lead capture ONLY after all fields"
+  },
+
+  "execution_loop": [
+    {
+      "task_id": "T1",
+      "name": "Python Compatibility",
+      "action": [
+        "Scan entire codebase",
+        "Find all Python 3.10+ syntax",
+        "Replace with Python 3.9-safe syntax",
+        "Re-run validation"
+      ],
+      "loop_until": "PASS",
+      "pass_condition": [
+        "No usage of | typing",
+        "All typing uses Optional/Union/Dict/List",
+        "Code compatible with Python 3.9"
+      ],
+      "status": "pending"
+    },
+
+    {
+      "task_id": "T2",
+      "name": "Framework Enforcement",
+      "action": [
+        "Check for LangGraph/LangChain/AutoGen",
+        "IF missing → add minimal LangGraph wrapper",
+        "Integrate existing logic into graph nodes",
+        "Re-validate routing"
+      ],
+      "loop_until": "PASS",
+      "pass_condition": [
+        "Framework exists in code",
+        "Graph or equivalent orchestrator is used",
+        "Core logic remains intact"
+      ],
+      "status": "pending"
+    },
+
+    {
+      "task_id": "T3",
+      "name": "LLM Integration",
+      "action": [
+        "Check if allowed LLM is present",
+        "IF missing → add GPT-4o-mini via LangChain",
+        "Restrict usage to response polishing",
+        "Ensure LLM is NOT used for KB answers"
+      ],
+      "loop_until": "PASS",
+      "pass_condition": [
+        "LLM is integrated",
+        "LLM is NOT used for factual answers",
+        "LLM usage is minimal and controlled"
+      ],
+      "status": "pending"
+    },
+
+    {
+      "task_id": "T4",
+      "name": "Intent Classification",
+      "action": [
+        "Test all 3 intent categories",
+        "Fix classification logic if incorrect",
+        "Re-test until correct"
+      ],
+      "loop_until": "PASS",
+      "pass_condition": [
+        "casual_greeting works",
+        "product_or_pricing_inquiry works",
+        "high_intent_lead works"
+      ],
+      "status": "pending"
+    },
+
+    {
+      "task_id": "T5",
+      "name": "RAG Validation",
+      "action": [
+        "Test all KB queries",
+        "Ensure answers come ONLY from local KB",
+        "Fix any hallucination or mismatch",
+        "Re-test"
+      ],
+      "loop_until": "PASS",
+      "pass_condition": [
+        "Basic plan correct",
+        "Pro plan correct",
+        "Policies correct",
+        "No hallucination",
+        "No external data used"
+      ],
+      "status": "pending"
+    },
+
+    {
+      "task_id": "T6",
+      "name": "Lead Tool Gating",
+      "action": [
+        "Simulate high-intent flow",
+        "Verify slot filling order",
+        "Ensure tool NOT triggered early",
+        "Fix gating logic if needed",
+        "Re-test"
+      ],
+      "loop_until": "PASS",
+      "pass_condition": [
+        "Name collected",
+        "Email collected",
+        "Platform collected",
+        "Tool runs ONLY after all fields",
+        "Tool runs EXACTLY once"
+      ],
+      "status": "pending"
+    },
+
+    {
+      "task_id": "T7",
+      "name": "Memory Persistence",
+      "action": [
+        "Simulate 6-turn conversation",
+        "Check if state persists",
+        "Fix memory store if broken",
+        "Re-test"
+      ],
+      "loop_until": "PASS",
+      "pass_condition": [
+        "State persists across turns",
+        "Lead fields are remembered",
+        "No reset mid-flow"
+      ],
+      "status": "pending"
+    },
+
+    {
+      "task_id": "T8",
+      "name": "requirements.txt",
+      "action": [
+        "Scan imports",
+        "Generate minimal requirements.txt",
+        "Remove unused packages",
+        "Ensure project installs successfully"
+      ],
+      "loop_until": "PASS",
+      "pass_condition": [
+        "All runtime deps included",
+        "No unnecessary deps",
+        "Project runs after install"
+      ],
+      "status": "pending"
+    },
+
+    {
+      "task_id": "T9",
+      "name": "README Compliance",
+      "action": [
+        "Compare README vs code",
+        "Fix mismatch",
+        "Ensure setup steps work",
+        "Add architecture explanation",
+        "Add webhook explanation"
+      ],
+      "loop_until": "PASS",
+      "pass_condition": [
+        "README is accurate",
+        "Setup works",
+        "Architecture explained",
+        "Webhook explained"
+      ],
+      "status": "pending"
+    },
+
+    {
+      "task_id": "T10",
+      "name": "Full Flow Validation",
+      "action": [
+        "Simulate full user journey",
+        "Greeting → Pricing → Intent shift → Lead capture",
+        "Fix any break",
+        "Re-test until smooth"
+      ],
+      "loop_until": "PASS",
+      "pass_condition": [
+        "Flow is smooth",
+        "No early tool call",
+        "No hallucination",
+        "Memory works throughout"
+      ],
+      "status": "pending"
+    }
+  ],
+
+  "termination_condition": [
+    "ALL tasks status = PASS",
+    "No remaining bugs",
+    "Project is fully demo-ready",
+    "All rubric requirements satisfied"
+  ],
+
+  "final_output": [
+    "TASK STATUS SUMMARY",
+    "FIXES APPLIED",
+    "FILES MODIFIED",
+    "FINAL requirements.txt",
+    "FINAL STATUS: PASS"
+  ],
+
+  "execution_style": {
+    "speed": "MAX",
+    "thinking": "STRICT",
+    "behavior": "RELENTLESS",
+    "goal": "100% COMPLETION — NO PARTIAL SUCCESS"
+  }
+}

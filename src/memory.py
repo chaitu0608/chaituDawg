@@ -16,7 +16,7 @@ import hashlib
 import json
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import Any
+from typing import Any, Dict, List, Optional, Union
 
 from src.input_limits import (
     MAX_LEAD_FIELD_CHARS,
@@ -43,21 +43,21 @@ class SessionState:
     """Durable state fields used by the conversational workflow."""
 
     session_id: str
-    messages: list[ConversationMessage] = field(default_factory=list)
-    intent: str | None = None
+    messages: List[ConversationMessage] = field(default_factory=list)
+    intent: Optional[str] = None
     lead_status: str = "new"
-    lead_name: str | None = None
-    lead_email: str | None = None
-    lead_platform: str | None = None
+    lead_name: Optional[str] = None
+    lead_email: Optional[str] = None
+    lead_platform: Optional[str] = None
     email_retry_count: int = 0
     platform_retry_count: int = 0
     lead_collection_paused: bool = False
-    lead_capture_fingerprint: str | None = None
-    kb_context: list[str] = field(default_factory=list)
+    lead_capture_fingerprint: Optional[str] = None
+    kb_context: List[str] = field(default_factory=list)
     turn_count: int = 0
-    memory_snapshot: dict[str, Any] = field(default_factory=dict)
+    memory_snapshot: Dict[str, Any] = field(default_factory=dict)
 
-    def to_state_dict(self) -> dict[str, Any]:
+    def to_state_dict(self) -> Dict[str, Any]:
         """Return a JSON-safe state payload including required workflow fields."""
         return {
             "messages": [asdict(message) for message in self.messages],
@@ -81,7 +81,7 @@ class SimpleMemStore:
 
     def __init__(
         self,
-        storage_path: str | Path = DEFAULT_SIMPLEMEM_PATH,
+        storage_path: Union[str, Path] = DEFAULT_SIMPLEMEM_PATH,
         *,
         enable_checksum: bool = False,
     ) -> None:
@@ -109,7 +109,7 @@ class SimpleMemStore:
         user_message: str,
         assistant_message: str,
         *,
-        intent: str | None = None,
+        intent: Optional[str] = None,
         kb_context_refs: tuple[str, ...] = (),
     ) -> SessionState:
         """Persist one user+assistant turn and update optional intent/context refs."""
@@ -164,9 +164,9 @@ class SimpleMemStore:
         self,
         session_id: str,
         *,
-        name: str | None = None,
-        email: str | None = None,
-        platform: str | None = None,
+        name: Optional[str] = None,
+        email: Optional[str] = None,
+        platform: Optional[str] = None,
     ) -> SessionState:
         """Persist lead slot values and refresh lead_status deterministically."""
         validate_session_id(session_id)
@@ -234,7 +234,7 @@ class SimpleMemStore:
         state = self.load_state(session_id)
         return _lead_fields_complete(state)
 
-    def restore_recent_context(self, session_id: str, max_turns: int = 6) -> list[dict[str, str]]:
+    def restore_recent_context(self, session_id: str, max_turns: int = 6) -> List[Dict[str, str]]:
         """Return the most recent chat context as role/content dictionaries."""
         validate_session_id(session_id)
         state = self.load_state(session_id)
@@ -242,7 +242,7 @@ class SimpleMemStore:
         recent_messages = state.messages[-max_messages:]
         return [asdict(message) for message in recent_messages]
 
-    def inspect_state(self, session_id: str, *, include_pii: bool = False) -> dict[str, Any]:
+    def inspect_state(self, session_id: str, *, include_pii: bool = False) -> Dict[str, Any]:
         """Return full state payload for logging/debug inspection."""
         validate_session_id(session_id)
         state = self.load_state(session_id)
@@ -252,13 +252,13 @@ class SimpleMemStore:
             return snapshot
         return _mask_snapshot(snapshot)
 
-    def _save_state(self, state: SessionState, all_sessions: dict[str, Any] | None = None) -> None:
+    def _save_state(self, state: SessionState, all_sessions: Optional[Dict[str, Any]] = None) -> None:
         sessions = all_sessions if all_sessions is not None else self._load_all_sessions()
         state.memory_snapshot = _build_memory_snapshot(state)
         sessions[state.session_id] = state.to_state_dict()
         self._write_all_sessions(sessions)
 
-    def _load_all_sessions(self) -> dict[str, Any]:
+    def _load_all_sessions(self) -> Dict[str, Any]:
         if not self._storage_path.exists():
             return {}
 
@@ -278,9 +278,9 @@ class SimpleMemStore:
 
         return raw
 
-    def _write_all_sessions(self, payload: dict[str, Any]) -> None:
+    def _write_all_sessions(self, payload: Dict[str, Any]) -> None:
         # Write atomically to avoid partial writes when persisting turn-by-turn state.
-        to_write: dict[str, Any] = payload
+        to_write: Dict[str, Any] = payload
         if self._enable_checksum:
             serialized = _stable_json(payload)
             digest = hashlib.sha256(serialized.encode("utf-8")).hexdigest()
@@ -295,7 +295,7 @@ class SimpleMemStore:
 
         temp_path.replace(self._storage_path)
 
-    def _verify_checksum(self, wrapped_payload: dict[str, Any]) -> None:
+    def _verify_checksum(self, wrapped_payload: Dict[str, Any]) -> None:
         meta = wrapped_payload.get("_meta")
         if not isinstance(meta, dict):
             raise ValueError("Missing _meta for checksummed SimpleMem payload")
@@ -314,13 +314,13 @@ def _new_session_state(session_id: str) -> SessionState:
     return state
 
 
-def _deserialize_state(session_id: str, raw_state: dict[str, Any]) -> SessionState:
+def _deserialize_state(session_id: str, raw_state: Dict[str, Any]) -> SessionState:
     raw_messages = raw_state.get("messages", [])
     if not isinstance(raw_messages, list):
         raw_messages = []
     raw_messages = raw_messages[-MAX_STORED_MESSAGES:]
 
-    messages: list[ConversationMessage] = []
+    messages: List[ConversationMessage] = []
     for item in raw_messages:
         if not isinstance(item, dict):
             continue
@@ -328,7 +328,7 @@ def _deserialize_state(session_id: str, raw_state: dict[str, Any]) -> SessionSta
         content = clamp_persisted_text(str(item.get("content", "")))
         messages.append(ConversationMessage(role=role, content=content))
 
-    def _clamp_optional_str(value: object) -> str | None:
+    def _clamp_optional_str(value: object) -> Optional[str]:
         if value is None:
             return None
         if not isinstance(value, str):
@@ -343,7 +343,7 @@ def _deserialize_state(session_id: str, raw_state: dict[str, Any]) -> SessionSta
     turn_count = max(0, min(turn_count, 1_000_000))
 
     kb_raw = raw_state.get("kb_context", [])
-    kb_context: list[str] = []
+    kb_context: List[str] = []
     if isinstance(kb_raw, list):
         for ref in kb_raw[:256]:
             if isinstance(ref, str):
@@ -373,7 +373,7 @@ def _deserialize_state(session_id: str, raw_state: dict[str, Any]) -> SessionSta
     return state
 
 
-def _build_memory_snapshot(state: SessionState) -> dict[str, Any]:
+def _build_memory_snapshot(state: SessionState) -> Dict[str, Any]:
     return {
         "session_id": state.session_id,
         "messages_stored": len(state.messages),
@@ -409,9 +409,9 @@ def _lead_fields_complete(state: SessionState) -> bool:
     )
 
 
-def _dedupe_preserve_order(values: tuple[str, ...]) -> list[str]:
+def _dedupe_preserve_order(values: tuple[str, ...]) -> List[str]:
     seen: set[str] = set()
-    ordered: list[str] = []
+    ordered: List[str] = []
     for value in values:
         if value not in seen:
             ordered.append(value)
@@ -419,17 +419,17 @@ def _dedupe_preserve_order(values: tuple[str, ...]) -> list[str]:
     return ordered
 
 
-def _stable_json(payload: dict[str, Any]) -> str:
+def _stable_json(payload: Dict[str, Any]) -> str:
     return json.dumps(payload, sort_keys=True, separators=(",", ":"))
 
 
-def _mask_snapshot(snapshot: dict[str, Any]) -> dict[str, Any]:
+def _mask_snapshot(snapshot: Dict[str, Any]) -> Dict[str, Any]:
     masked = dict(snapshot)
     if isinstance(masked.get("lead_email"), str):
         masked["lead_email"] = mask_email_in_text(masked["lead_email"])
     messages = masked.get("messages")
     if isinstance(messages, list):
-        masked_messages: list[dict[str, Any]] = []
+        masked_messages: List[Dict[str, Any]] = []
         for message in messages:
             if isinstance(message, dict):
                 message_copy = dict(message)

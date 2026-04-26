@@ -5,18 +5,18 @@ from __future__ import annotations
 from hashlib import sha256
 import hmac
 import os
-from typing import Any
+from typing import Any, Dict, Optional
 
 from fastapi import FastAPI, Header, HTTPException, Request
 
-from src.agent import build_default_agent
+from src.graph_agent import build_langgraph_agent
 
 WEBHOOK_SECRET = os.getenv("AUTOSTREAM_WEBHOOK_SECRET", "dev-secret")
-agent = build_default_agent()
+agent = build_langgraph_agent()
 app = FastAPI(title="AutoStream Webhook Example")
 
 
-def _verify_signature(raw_body: bytes, signature: str | None) -> None:
+def _verify_signature(raw_body: bytes, signature: Optional[str]) -> None:
     if signature is None:
         raise HTTPException(status_code=401, detail="Missing webhook signature")
     expected = hmac.new(WEBHOOK_SECRET.encode("utf-8"), raw_body, sha256).hexdigest()
@@ -32,8 +32,8 @@ async def healthz() -> dict[str, str]:
 @app.post("/webhooks/whatsapp")
 async def whatsapp_webhook(
     request: Request,
-    x_autostream_signature: str | None = Header(default=None),
-) -> dict[str, Any]:
+    x_autostream_signature: Optional[str] = Header(default=None),
+) -> Dict[str, Any]:
     raw_body = await request.body()
     _verify_signature(raw_body, x_autostream_signature)
 

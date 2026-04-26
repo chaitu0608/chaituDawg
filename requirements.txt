@@ -1,7 +1,7 @@
-# Runtime code (src/) uses the Python standard library only: deterministic agent,
-# JSON knowledge base, and file-backed session memory.
-#
-# Install dev/test tooling with: pip install -r requirements-dev.txt
-# Optional LangChain/LangGraph pins (unused by current code paths): requirements-llm.txt
-
-pytest==8.3.3
+# Runtime dependencies (submission-compliant).
+langgraph==0.2.67
+langchain==0.3.7
+langchain-openai==0.2.8
+openai==1.54.4
+fastapi==0.115.2
+uvicorn==0.32.0

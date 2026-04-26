@@ -11,6 +11,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import logging
 import re
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 EMAIL_TOKEN_PATTERN = re.compile(r"([A-Za-z0-9._%+-]{1,64})@([A-Za-z0-9.-]+\.[A-Za-z]{2,})")
@@ -71,7 +72,7 @@ def is_valid_email(email: str) -> bool:
     return EMAIL_PATTERN.fullmatch(email.strip()) is not None
 
 
-def extract_email(text: str) -> str | None:
+def extract_email(text: str) -> Optional[str]:
     """Extract and validate the first email-like token from text."""
     candidate = text.strip().strip(".,;:!?")
     if is_valid_email(candidate):
@@ -86,13 +87,13 @@ def extract_email(text: str) -> str | None:
     return None
 
 
-def normalize_platform(value: str) -> str | None:
+def normalize_platform(value: str) -> Optional[str]:
     """Normalize common platform aliases to canonical values."""
     normalized = " ".join(value.strip().lower().split())
     return PLATFORM_ALIASES.get(normalized)
 
 
-def extract_platform(text: str) -> str | None:
+def extract_platform(text: str) -> Optional[str]:
     """Extract a supported platform mention from free-form text."""
     normalized_text = " ".join(text.strip().lower().split())
     for alias, canonical in PLATFORM_ALIASES.items():
@@ -102,7 +103,7 @@ def extract_platform(text: str) -> str | None:
     return None
 
 
-def extract_name(text: str) -> str | None:
+def extract_name(text: str) -> Optional[str]:
     """Extract a probable contact name from free-form user input."""
     normalized = " ".join(text.strip().split())
     if not normalized:
@@ -202,7 +203,7 @@ def _looks_like_plain_name(value: str) -> bool:
     return not any(word.lower() in blocked_tokens for word in words)
 
 
-def _clean_name(value: str) -> str | None:
+def _clean_name(value: str) -> Optional[str]:
     stripped = " ".join(value.strip().split())
     stripped = stripped.strip(".,;:!?")
     if not stripped:

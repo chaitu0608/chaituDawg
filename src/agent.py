@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 import time
-from typing import Callable
+from typing import Callable, Dict, Optional, Union
 
 from src.input_limits import clamp_user_message, validate_session_id
 from src.intents import IntentClassifier, IntentLabel
@@ -59,7 +59,7 @@ class AgentResponse:
     text: str
     intent: str
     lead_status: str
-    lead_fields: dict[str, str | None]
+    lead_fields: Dict[str, Optional[str]]
     tool_called: bool
 
 
@@ -69,10 +69,10 @@ class AutoStreamAgent:
     def __init__(
         self,
         *,
-        memory_store: SimpleMemStore | None = None,
-        intent_classifier: IntentClassifier | None = None,
+        memory_store: Optional[SimpleMemStore] = None,
+        intent_classifier: Optional[IntentClassifier] = None,
         lead_capture_tool: LeadCaptureTool = mock_lead_capture,
-        rate_limit_hook: RateLimitHook | None = None,
+        rate_limit_hook: Optional[RateLimitHook] = None,
         tool_timeout_seconds: float = 2.0,
         circuit_fail_threshold: int = 3,
         circuit_cooldown_seconds: float = 30.0,
@@ -233,6 +233,7 @@ class AutoStreamAgent:
                 )
 
         if self._memory.lead_fields_complete(session_id):
+            state = self._memory.load_state(session_id)
             payload = payload_from_state(state)
             fingerprint = lead_capture_fingerprint(payload)
             if state.lead_capture_fingerprint == fingerprint:
@@ -305,7 +306,7 @@ class AutoStreamAgent:
                 raise ValueError("Lead capture failed. Please try again.") from exc
 
 
-def build_default_agent(storage_path: str | Path | None = None) -> AutoStreamAgent:
+def build_default_agent(storage_path: Optional[Union[str, Path]] = None) -> AutoStreamAgent:
     """Factory helper for standard local execution."""
     memory = SimpleMemStore(storage_path=storage_path) if storage_path else SimpleMemStore()
     return AutoStreamAgent(memory_store=memory)

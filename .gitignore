@@ -14,3 +14,8 @@ build/
 # Generated demo / evaluation artifacts (regenerate locally)
 data/demo_session_memory.json
 reports/
+
+# Local secrets / environment
+.env
+.env.*
+!.env.example
