@@ -1,7 +1,9 @@
-# Runtime dependencies (submission-compliant).
+# Runtime dependencies required for end-to-end execution.
+# Includes: LangGraph agent flow, GPT-4o-mini integration, and webhook server.
 langgraph==0.2.67
 langchain==0.3.7
 langchain-openai==0.2.8
 openai==1.54.4
+httpx==0.27.2
 fastapi==0.115.2
 uvicorn==0.32.0
