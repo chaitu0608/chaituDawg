@@ -27,19 +27,19 @@
       },
       {
         "role": "user",
-        "content": "My name is Maya"
+        "content": "My name is Alex"
       },
       {
         "role": "assistant",
-        "content": "Collected so far - name: Maya, email: missing, platform: missing. What is the best email to reach you?"
+        "content": "Collected so far - name: Alex, email: missing, platform: missing. What is the best email to reach you?"
       },
       {
         "role": "user",
-        "content": "maya@example.com"
+        "content": "alex.creator@example.com"
       },
       {
         "role": "assistant",
-        "content": "Collected so far - name: Maya, email: maya@example.com, platform: missing. Which platform do you primarily create on? (YouTube, Instagram, TikTok, LinkedIn, Twitch)"
+        "content": "Collected so far - name: Alex, email: alex.creator@example.com, platform: missing. Which platform do you primarily create on? (YouTube, Instagram, TikTok, LinkedIn, Twitch)"
       },
       {
         "role": "user",
@@ -47,7 +47,7 @@
       },
       {
         "role": "assistant",
-        "content": "Thanks, all required details are collected. Lead captured successfully: Maya, maya@example.com, YouTube"
+        "content": "Thanks, all required details are collected. Lead captured successfully: Alex, alex.creator@example.com, YouTube"
       },
       {
         "role": "user",
@@ -60,13 +60,13 @@
     ],
     "intent": "high_intent_lead",
     "lead_status": "captured",
-    "lead_name": "Maya",
-    "lead_email": "maya@example.com",
+    "lead_name": "Alex",
+    "lead_email": "alex.creator@example.com",
     "lead_platform": "YouTube",
     "email_retry_count": 0,
     "platform_retry_count": 0,
     "lead_collection_paused": false,
-    "lead_capture_fingerprint": "ddc2a0c3232e6022f4ae3d028be54d3d918aaa7397b06e370e37b261cd615684",
+    "lead_capture_fingerprint": "ba68eb748008cd7d32af8a1897f101012ea0ca84e1ea84d3e90af1899efde3d8",
     "kb_context": [
       "Basic Plan: price=$29/month; limits=10 videos/month; resolution=720p; extras=none",
       "Pro Plan: price=$79/month; limits=Unlimited videos; resolution=4K; extras=AI captions"
@@ -82,10 +82,10 @@
       "email_retry_count": 0,
       "platform_retry_count": 0,
       "lead_collection_paused": false,
-      "lead_capture_fingerprint": "ddc2a0c3232e6022f4ae3d028be54d3d918aaa7397b06e370e37b261cd615684",
+      "lead_capture_fingerprint": "ba68eb748008cd7d32af8a1897f101012ea0ca84e1ea84d3e90af1899efde3d8",
       "recent_context_preview": [
         "YouTube",
-        "Thanks, all required details are collected. Lead captured successfully: Maya, maya@example.com, YouTube",
+        "Thanks, all required details are collected. Lead captured successfully: Alex, alex.creator@example.com, YouTube",
         "Sign me up again",
         "Your lead details are already captured for this session. If you want to submit another lead, please start a new session."
       ]

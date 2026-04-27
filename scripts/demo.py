@@ -24,8 +24,8 @@ def main() -> int:
         "Hey there",
         "What are your pricing plans?",
         "I want to try the Pro plan",
-        "My name is Maya",
-        "maya@example.com",
+        "My name is Alex",
+        "alex.creator@example.com",
         "YouTube",
         "Sign me up again",
     )
