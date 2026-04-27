@@ -76,13 +76,13 @@ def extract_email(text: str) -> Optional[str]:
     """Extract and validate the first email-like token from text."""
     candidate = text.strip().strip(".,;:!?")
     if is_valid_email(candidate):
-        return candidate
+        return candidate.lower()
 
     # Fallback extraction for mixed text messages.
     token_pattern = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
     match = token_pattern.search(text)
     if match and is_valid_email(match.group(0)):
-        return match.group(0)
+        return match.group(0).lower()
 
     return None
 
@@ -143,6 +143,19 @@ def validate_lead_payload(name: str, email: str, platform: str) -> tuple[bool, s
         return False, "platform"
 
     return True, ""
+
+
+def normalize_lead_payload(name: str, email: str, platform: str) -> LeadCapturePayload:
+    """Return canonical lead payload values used by validation and tool calls."""
+    cleaned_name = _clean_name(name) or ""
+    cleaned_email = email.strip().lower()
+    canonical_platform = normalize_platform(platform)
+    cleaned_platform = canonical_platform or platform.strip()
+    return LeadCapturePayload(
+        name=cleaned_name,
+        email=cleaned_email,
+        platform=cleaned_platform,
+    )
 
 
 def supported_platforms() -> tuple[str, ...]:

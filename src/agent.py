@@ -36,6 +36,7 @@ from src.tools import (
     extract_name,
     extract_platform,
     mock_lead_capture,
+    normalize_lead_payload,
     supported_platforms,
     validate_lead_payload,
 )
@@ -113,15 +114,17 @@ class AutoStreamAgent:
         tool_called = False
         kb_context_refs: tuple[str, ...] = ()
 
-        route_state = self._resolve_route_state(prior_state, intent_result.label, user_message)
+        effective_intent_label = intent_result.label
+        route_state = self._resolve_route_state(prior_state, effective_intent_label, user_message)
         if route_state == RouteState.LEAD_FLOW:
-            effective_intent = intent_result.label
             if prior_state.lead_collection_paused and is_resume_request(user_message):
-                effective_intent = IntentLabel.HIGH_INTENT_LEAD
+                effective_intent_label = IntentLabel.HIGH_INTENT_LEAD
+            elif prior_state.lead_status in {"collecting", "ready"}:
+                effective_intent_label = IntentLabel.HIGH_INTENT_LEAD
             response_text, tool_called = self._handle_lead_flow(
                 session_id=session_id,
                 user_message=user_message,
-                intent=effective_intent,
+                intent=effective_intent_label,
             )
         elif route_state == RouteState.INQUIRY:
             rag_result = answer_from_kb(user_message)
@@ -139,13 +142,13 @@ class AutoStreamAgent:
             session_id=session_id,
             user_message=user_message,
             assistant_message=response_text,
-            intent=intent_result.label.value,
+            intent=effective_intent_label.value,
             kb_context_refs=kb_context_refs,
         )
 
         return AgentResponse(
             text=response_text,
-            intent=intent_result.label.value,
+            intent=effective_intent_label.value,
             lead_status=updated_state.lead_status,
             lead_fields={
                 "name": updated_state.lead_name,
@@ -242,11 +245,8 @@ class AutoStreamAgent:
                     "Lead details were already captured for this exact payload in this session.",
                     False,
                 )
-            valid, failed_field = validate_lead_payload(
-                payload.name,
-                payload.email,
-                payload.platform,
-            )
+            payload = normalize_lead_payload(payload.name, payload.email, payload.platform)
+            valid, failed_field = validate_lead_payload(payload.name, payload.email, payload.platform)
             if not valid:
                 summary = slot_summary(state)
                 return (

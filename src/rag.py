@@ -297,6 +297,11 @@ def _route_query(normalized_question: str, kb: KnowledgeBase) -> tuple[QueryType
     plan_detail_terms = (
         "price",
         "pricing",
+        "cost",
+        "costs",
+        "how much",
+        "monthly",
+        "month",
         "plan",
         "plans",
         "feature",
