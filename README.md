@@ -59,12 +59,33 @@ The optional LLM path runs only in `maybe_polish` for greeting-shaped turns when
 - Lead capture runs only after name, email, and platform are present and valid, and only once per completed payload for the session.
 - Conversation state persists across turns in the session store.
 
-## WhatsApp integration (webhooks)
+## WhatsApp integration (webhooks + Twilio)
 
-1. Expose `POST /webhooks/whatsapp`.
-2. Verify `X-Autostream-Signature` (HMAC-SHA256 over the raw body with `AUTOSTREAM_WEBHOOK_SECRET`).
-3. Map payload to `session_id` and `text`, then call `agent.handle_message(session_id, user_message=text)` on the LangGraph agent from `examples/webhook_app.py`.
-4. Return `reply`, `intent`, `lead_status`, and `tool_called` to your provider.
+This repository ships a webhook reference in `examples/webhook_app.py` and can be
+connected to WhatsApp through Twilio by deploying this server and registering the
+public webhook URL in the Twilio console.
+
+### Deployment flow with Twilio webhook URL
+
+1. Deploy this app and expose a public URL (for example, `https://your-domain.com`).
+2. In Twilio WhatsApp Sandbox (or a Twilio WhatsApp-enabled number), set the inbound
+   webhook URL to:
+   - `https://your-domain.com/webhooks/whatsapp`
+3. Twilio forwards each inbound WhatsApp message to that URL.
+4. Your webhook adapter maps Twilio payload fields into the agent input:
+   - `session_id` <- sender identifier (for example Twilio `From`)
+   - `text` <- message body (for example Twilio `Body`)
+5. The server calls:
+   - `agent.handle_message(session_id=session_id, user_message=text)`
+6. The server returns the generated reply payload (`reply`, `intent`, `lead_status`,
+   `tool_called`) so your Twilio response layer can deliver the WhatsApp message.
+
+### Signature verification note
+
+The included example currently verifies a custom `X-Autostream-Signature` header
+using `AUTOSTREAM_WEBHOOK_SECRET` for local/demo safety. For production Twilio use,
+replace or extend this verifier to validate Twilio's signature header
+(`X-Twilio-Signature`) against the exact URL/body Twilio signed.
 
 `GET /healthz` is included for probes.
 
